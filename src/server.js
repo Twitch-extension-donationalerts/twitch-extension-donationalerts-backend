@@ -51,9 +51,9 @@ app.get("/getUser/:user_id", (req, res) => {
   });
 });
 
-app.get("/getDonations/:username", (req, res) => {
+app.get("/getDonations/:user_id", (req, res) => {
   Users.find({
-    twitch_username: req.params.username
+    user_id: req.params.user_id
   }).then(data => {
     if (data.length) {
       axios.get(`${DA_URL}/api/v1/alerts/donations`, {
@@ -97,13 +97,13 @@ app.get("/getDonations/:username", (req, res) => {
           scope: SCOPE
         }).then(_data => {
           Users.updateOne({
-            twitch_username: req.params.username
+            user_id: req.params.user_id
           }, {
             $set: {
               accessToken: _data.data.access_token,
               refreshToken: _data.data.refresh_token,
             }
-          }).then(() => res.redirect(`${REDIRECT}/getDonations/${req.params.username}`));
+          }).then(() => res.redirect(`${REDIRECT}/getDonations/${req.params.user_id}`));
         });
       });
     } else {
