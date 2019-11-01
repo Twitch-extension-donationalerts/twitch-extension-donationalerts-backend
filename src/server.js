@@ -41,7 +41,7 @@ app.get("/getUser/:user_id", (req, res) => {
     user_id: req.params.user_id
   }).then(data => {
     if (data.length) {
-      res.send(data[0].username);
+      res.send({ username: data[0].username });
     } else {
       res.send("");
     }
