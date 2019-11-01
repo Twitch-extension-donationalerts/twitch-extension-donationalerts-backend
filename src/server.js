@@ -136,7 +136,7 @@ app.get("/userSetToken/:token/:user_id", (req, res) => {
             user_id: req.params.user_id,
             twitch_username: twitch_data.data.name
           }
-        }).then(() => res.send(data[0].twitch_username));
+        }).then(() => res.send(twitch_data.data.name));
       });
     } else {
       res.send("");
