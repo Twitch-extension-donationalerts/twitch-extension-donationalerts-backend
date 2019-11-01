@@ -14,6 +14,7 @@ const REDIRECT = process.env.REDIRECT;
 const CLIENT_ID = process.env.CLIENT_ID;
 const SECRET = process.env.SECRET;
 const SCOPE = process.env.SCOPE;
+const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 
 mongoose.connect(MONGO, {
   useNewUrlParser: true,
@@ -41,16 +42,18 @@ app.get("/getUser/:user_id", (req, res) => {
     user_id: req.params.user_id
   }).then(data => {
     if (data.length) {
-      res.send({ username: data[0].username });
+      res.send({
+        username: data[0].twitch_username
+      });
     } else {
       res.send("");
     }
   });
 });
 
-app.get("/getDonations/:user_id", (req, res) => {
+app.get("/getDonations/:username", (req, res) => {
   Users.find({
-    user_id: req.params.user_id
+    twitch_username: req.params.username
   }).then(data => {
     if (data.length) {
       axios.get(`${DA_URL}/api/v1/alerts/donations`, {
@@ -94,13 +97,13 @@ app.get("/getDonations/:user_id", (req, res) => {
           scope: SCOPE
         }).then(_data => {
           Users.updateOne({
-            user_id: req.params.user_id
+            twitch_username: req.params.username
           }, {
             $set: {
               accessToken: _data.data.access_token,
               refreshToken: _data.data.refresh_token,
             }
-          }).then(() => res.redirect(`${REDIRECT}/getDonations/${req.params.user_id}`));
+          }).then(() => res.redirect(`${REDIRECT}/getDonations/${req.params.username}`));
         });
       });
     } else {
@@ -120,13 +123,21 @@ app.get("/userSetToken/:token/:user_id", (req, res) => {
     user_token: req.params.token
   }).then(data => {
     if (data.length) {
-      Users.updateOne({
-        user_token: req.params.token
-      }, {
-        $set: {
-          user_id: req.params.user_id
+      axios.get(`https://api.twitch.tv/kraken/channels/${req.params.user_id}`, {
+        headers: {
+          'Client-ID': TWITCH_CLIENT_ID,
+          'Accept': 'application/vnd.twitchtv.v5+json'
         }
-      }).then(() => res.send(data[0].username));
+      }).then(twitch_data => {
+        Users.updateOne({
+          user_token: req.params.token
+        }, {
+          $set: {
+            user_id: req.params.user_id,
+            twitch_username: twitch_data.data.name
+          }
+        }).then(() => res.send(data[0].twitch_username));
+      });
     } else {
       res.send("");
     }

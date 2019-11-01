@@ -7,6 +7,7 @@ const User = new Schema(
     { 
         user_id: String,
         username: String,
+        twitch_username: String,
         accessToken: String, 
         refreshToken: String,
         user_token: String,
