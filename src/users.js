@@ -12,7 +12,10 @@ const User = new Schema(
         refreshToken: String,
         user_token: String,
         mail: String,
-        socket_token: String
+        socket_token: String,
+        followers: String,
+        views: String,
+        date: String
     }
 )
 

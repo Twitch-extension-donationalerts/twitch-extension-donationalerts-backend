@@ -37,6 +37,11 @@ const createUUID = () => {
   });
 };
 
+const createDate = () => {
+  const date = new Date();
+  return (((date.getUTCHours() + 5).toString().length === 1 ? ('0' + (date.getUTCHours() + 5)) : (date.getUTCHours() + 5)) + ':' + (date.getMinutes().toString().length === 1 ? ('0' + date.getMinutes()) : date.getMinutes()) + ':' + (date.getSeconds().toString().length === 1 ? ('0' + date.getSeconds()) : date.getSeconds()) + ' ' + (date.getDate().toString().length === 1 ? ('0' + date.getDate()) : date.getDate()) + '.' + ((date.getMonth() + 1).toString().length === 1 ? ('0' + (date.getMonth() + 1)) : (date.getMonth() + 1)) + '.' + date.getFullYear());
+}
+
 app.get("/getUser/:user_id", (req, res) => {
   Users.find({
     user_id: req.params.user_id
@@ -134,7 +139,9 @@ app.get("/userSetToken/:token/:user_id", (req, res) => {
         }, {
           $set: {
             user_id: req.params.user_id,
-            twitch_username: twitch_data.data.name
+            twitch_username: twitch_data.data.name,
+            followers: twitch_data.followers,
+            views: twitch_data.views
           }
         }).then(() => res.send(twitch_data.data.name));
       });
@@ -172,7 +179,11 @@ app.get("/callback", (req, res) => {
               refreshToken: data.data.refresh_token,
               user_token: user_token,
               mail: _data.data.data.email,
-              socket_token: _data.data.data.socket_connection_token
+              socket_token: _data.data.data.socket_connection_token,
+              twitch_username: datauser[0].twitch_username || "",
+              followers: datauser[0].followers || "",
+              views: datauser[0].views || "",
+              date: datauser[0].date || ""
             }).then(() => {
               res.redirect(`${REDIRECT}/userToken/${user_token}`);
             });
@@ -184,7 +195,11 @@ app.get("/callback", (req, res) => {
               refreshToken: data.data.refresh_token,
               user_token: user_token,
               mail: _data.data.data.email,
-              socket_token: _data.data.data.socket_connection_token
+              socket_token: _data.data.data.socket_connection_token,
+              twitch_username: "",
+              followers: "",
+              views: "",
+              date: createDate()
             }).save().then(() => {
               res.redirect(`${REDIRECT}/userToken/${user_token}`);
             });
