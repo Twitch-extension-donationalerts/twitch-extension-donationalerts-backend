@@ -140,8 +140,8 @@ app.get("/userSetToken/:token/:user_id", (req, res) => {
           $set: {
             user_id: req.params.user_id,
             twitch_username: twitch_data.data.name,
-            followers: twitch_data.followers,
-            views: twitch_data.views
+            followers: twitch_data.data.followers,
+            views: twitch_data.data.views
           }
         }).then(() => res.send(twitch_data.data.name));
       });
