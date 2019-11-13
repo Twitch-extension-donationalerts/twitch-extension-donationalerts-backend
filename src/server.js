@@ -60,47 +60,39 @@ app.get("/getDonations/:user_id", (req, res) => {
   Users.find({
     user_id: req.params.user_id
   }).then(data => {
-    let result = [];
     if (data.length) {
-      const getDonation = (link) => {
-        console.log(link);
-        axios.get(link, {
-          headers: {
-            Authorization: `Bearer ${data[0].accessToken}`
+      axios.get(`${DA_URL}/api/v1/alerts/donations`, {
+        headers: {
+          Authorization: `Bearer ${data[0].accessToken}`
+        }
+      }).then(_data => {
+        let donations = _data.data.data.map(w => {
+          if (w.currency === "RUB") {
+            return {
+              amount: w.amount,
+              username: w.username
+            };
+          } else if (w.currency === "USD") {
+            return {
+              amount: w.amount * 62,
+              username: w.username
+            };
+          } else if (w.currency === "EUR") {
+            return {
+              amount: w.amount * 71,
+              username: w.username
+            };
           }
-        }).then(_data => {
-          if (_data.data.links.next) {
-            result.concat(_data.data.data);
-            getDonation(`${DA_URL}/api/v1/alerts/donations?${(_data.data.links.next).split('?')[1]}`);
-          } else {
-            result = result.map(w => {
-              if (w.currency === "RUB") {
-                return {
-                  amount: w.amount,
-                  username: w.username
-                };
-              } else if (w.currency === "USD") {
-                return {
-                  amount: w.amount * 62,
-                  username: w.username
-                };
-              } else if (w.currency === "EUR") {
-                return {
-                  amount: w.amount * 71,
-                  username: w.username
-                };
-              }
-            }).reduce(
-              (a, c, i) => (
-                a.filter(elem => elem.username === c.username).length === 0 ?
-                a.push(c) :
-                (a.find(_elem => _elem.username === c.username).amount += c.amount),
-                a
-              ),
-              []
-            ).sort((a, b) => b.amount - a.amount).slice(0, 100);
-            res.send(result);
-          }
+        }).reduce(
+          (a, c, i) => (
+            a.filter(elem => elem.username === c.username).length === 0 ?
+            a.push(c) :
+            (a.find(_elem => _elem.username === c.username).amount += c.amount),
+            a
+          ),
+          []
+        ).sort((a, b) => b.amount - a.amount).slice(0, 100);
+        res.send(donations);
       }).catch(e => {
         axios.post(`${DA_URL}/oauth/token`, {
           grant_type: "refresh_token",
@@ -119,8 +111,6 @@ app.get("/getDonations/:user_id", (req, res) => {
           }).then(() => res.redirect(`${REDIRECT}/getDonations/${req.params.user_id}`));
         });
       });
-      }
-      getDonation(`${DA_URL}/api/v1/alerts/donations`);
     } else {
       res.send([]);
     }
