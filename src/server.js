@@ -63,7 +63,6 @@ app.get("/getDonations/:user_id", (req, res) => {
     let result = [];
     if (data.length) {
       const getDonation = (link) => {
-        console.log(link);
         axios.get(link, {
           headers: {
             Authorization: `Bearer ${data[0].accessToken}`
